@@ -1,0 +1,138 @@
+.campaign-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.1), transparent 30%),
+        linear-gradient(135deg, #020617, #0f172a);
+}
+
+.campaign-header h1 {
+    color: #f8fafc;
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.campaign-header p {
+    max-width: 720px;
+    color: #cbd5e1;
+}
+
+.campaign-filters {
+    margin: 35px 0;
+    display: flex;
+    gap: 18px;
+}
+
+.campaign-filters input,
+.campaign-filters select {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: white;
+}
+
+.campaign-filters input {
+    max-width: 340px;
+}
+
+.campaign-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.campaign-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.campaign-card:hover {
+    transform: translateY(-6px);
+    border-color: #38bdf8;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.18);
+}
+
+.campaign-img-box {
+    position: relative;
+}
+
+.campaign-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.category-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: #38bdf8;
+    color: #020617;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.card-content {
+    padding: 22px;
+}
+
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.card-title-row h3 {
+    color: #f8fafc;
+    font-size: 20px;
+}
+
+.card-content p {
+    color: #cbd5e1;
+    margin: 12px 0;
+}
+
+.verified-badge {
+    background: #064e3b;
+    color: #86efac;
+    padding: 5px 10px;
+    border-radius: 18px;
+    font-size: 12px;
+}
+
+.trust-box {
+    background: #064e3b;
+    color: #86efac;
+    padding: 11px;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.goal-text {
+    color: #94a3b8 !important;
+}
+
+@media (max-width: 900px) {
+    .campaign-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .campaign-filters {
+        flex-direction: column;
+    }
+
+    .campaign-filters input {
+        max-width: 100%;
+    }
+}

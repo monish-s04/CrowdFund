@@ -1,0 +1,85 @@
+.about-page {
+    min-height: 100vh;
+    padding: 80px 8%;
+    background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a);
+}
+
+.about-hero {
+    max-width: 900px;
+    margin-bottom: 45px;
+}
+
+.about-hero h1 {
+    color: #f8fafc;
+    font-size: 46px;
+    margin: 12px 0 18px;
+}
+
+.about-hero p {
+    color: #cbd5e1;
+    font-size: 18px;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.about-card {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 28px;
+    transition: 0.3s;
+}
+
+.about-card:hover {
+    transform: translateY(-6px);
+    border-color: #38bdf8;
+}
+
+.about-card h2,
+.tech-section h2 {
+    color: #38bdf8;
+    margin-bottom: 15px;
+}
+
+.about-card p {
+    color: #cbd5e1;
+}
+
+.tech-section {
+    margin-top: 45px;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 32px;
+}
+
+.tech-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.tech-grid span {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 12px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-hero h1 {
+        font-size: 34px;
+    }
+}

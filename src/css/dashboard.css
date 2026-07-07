@@ -1,0 +1,393 @@
+.dashboard-page {
+    min-height: 100vh;
+    padding: 50px 8%;
+    background:
+        radial-gradient(circle at top right,
+            rgba(56, 189, 248, .10),
+            transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a);
+}
+
+/* ==========================
+      HERO
+========================== */
+
+.dashboard-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 45px;
+}
+
+.dashboard-hero h1 {
+    font-size: 48px;
+    color: #fff;
+    margin: 12px 0;
+}
+
+.dashboard-hero span {
+    color: #38bdf8;
+}
+
+.dashboard-hero p {
+    color: #cbd5e1;
+    max-width: 650px;
+    line-height: 1.8;
+}
+
+.wallet-status {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 25px;
+    border-radius: 18px;
+    min-width: 220px;
+    text-align: center;
+}
+
+.wallet-status h3 {
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+.wallet-chip {
+    display: inline-block;
+    background: #064e3b;
+    color: #86efac;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+}
+
+/* ==========================
+      STATS
+========================== */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.dash-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 28px;
+    transition: .3s;
+}
+
+.dash-card:hover {
+    transform: translateY(-6px);
+    border-color: #38bdf8;
+    box-shadow: 0 15px 35px rgba(56, 189, 248, .15);
+}
+
+.dash-card span {
+    font-size: 34px;
+}
+
+.dash-card h2 {
+    color: #38bdf8;
+    font-size: 34px;
+    margin: 15px 0;
+}
+
+.dash-card p {
+    color: #cbd5e1;
+}
+
+/* ==========================
+      CONTENT
+========================== */
+
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.dashboard-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 28px;
+}
+
+.dashboard-panel h2 {
+    color: #38bdf8;
+    margin-bottom: 25px;
+}
+
+/* ==========================
+      CAMPAIGNS
+========================== */
+
+.campaign-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #334155;
+}
+
+.campaign-item:last-child {
+    border-bottom: none;
+}
+
+.campaign-item h3 {
+    color: white;
+}
+
+.campaign-item p {
+    color: #94a3b8;
+}
+
+.success-badge,
+.warning-badge {
+
+    padding: 8px 15px;
+
+    border-radius: 20px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+.success-badge {
+
+    background: #064e3b;
+
+    color: #86efac;
+
+}
+
+.warning-badge {
+
+    background: #78350f;
+
+    color: #fcd34d;
+
+}
+
+/* ==========================
+      NOTIFICATION
+========================== */
+
+.notification {
+
+    background: #0f172a;
+
+    border: 1px solid #334155;
+
+    padding: 15px;
+
+    margin-bottom: 15px;
+
+    border-radius: 10px;
+
+    color: #cbd5e1;
+
+    transition: .3s;
+
+}
+
+.notification:hover {
+
+    border-color: #38bdf8;
+
+}
+
+/* ==========================
+      CHART
+========================== */
+
+.analytics-box {
+
+    background: #1e293b;
+
+    border: 1px solid #334155;
+
+    border-radius: 18px;
+
+    padding: 30px;
+
+    margin-bottom: 40px;
+
+}
+
+.analytics-box h2 {
+
+    color: #38bdf8;
+
+    margin-bottom: 30px;
+
+}
+
+.chart-placeholder {
+
+    height: 260px;
+
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: space-evenly;
+
+}
+
+.bar {
+
+    width: 55px;
+
+    border-radius: 10px 10px 0 0;
+
+    background: linear-gradient(180deg,
+            #38bdf8,
+            #2563eb);
+
+}
+
+.bar1 {
+
+    height: 80px;
+
+}
+
+.bar2 {
+
+    height: 150px;
+
+}
+
+.bar3 {
+
+    height: 220px;
+
+}
+
+.bar4 {
+
+    height: 180px;
+
+}
+
+.bar5 {
+
+    height: 250px;
+
+}
+
+/* ==========================
+      ACTIONS
+========================== */
+
+.quick-actions {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 20px;
+
+}
+
+.action-card {
+
+    background: #1e293b;
+
+    border: 1px solid #334155;
+
+    padding: 24px;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    text-decoration: none;
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.action-card:hover {
+
+    transform: translateY(-6px);
+
+    border-color: #38bdf8;
+
+    background: #0f172a;
+
+}
+
+/* ==========================
+      RESPONSIVE
+========================== */
+
+@media(max-width:1000px) {
+
+    .dashboard-hero {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+    .dashboard-stats {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
+
+    .dashboard-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .quick-actions {
+
+        grid-template-columns: repeat(2, 1fr);
+
+    }
+
+}
+
+@media(max-width:700px) {
+
+    .dashboard-stats {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .quick-actions {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .dashboard-hero h1 {
+
+        font-size: 34px;
+
+    }
+
+}
+
+.dash-card:hover {
+    transform: translateY(-8px) scale(1.02);
+}

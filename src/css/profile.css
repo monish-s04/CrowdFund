@@ -1,0 +1,156 @@
+.profile-page {
+    min-height: 100vh;
+    padding: 70px 8%;
+    display: grid;
+    grid-template-columns: 0.9fr 1.6fr;
+    gap: 35px;
+    background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a);
+}
+
+.profile-card,
+.profile-stat-card,
+.achievement-box,
+.wallet-box,
+.activity-box {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid #334155;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.28);
+}
+
+.profile-card {
+    padding: 40px;
+    text-align: center;
+    height: fit-content;
+}
+
+.profile-card img {
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 22px;
+    border: 4px solid #38bdf8;
+}
+
+.profile-card h1 {
+    color: #f8fafc;
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.profile-card p {
+    color: #94a3b8;
+    margin-bottom: 18px;
+}
+
+.profile-badge {
+    background: rgba(34, 197, 94, 0.13);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    padding: 11px;
+    border-radius: 30px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+.profile-score {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 22px;
+    color: #cbd5e1;
+}
+
+.profile-score h2 {
+    color: #38bdf8;
+    font-size: 42px;
+    margin-top: 8px;
+}
+
+.profile-details {
+    display: grid;
+    gap: 25px;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.profile-stat-card {
+    padding: 25px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.profile-stat-card:hover,
+.achievement-box:hover,
+.wallet-box:hover,
+.activity-box:hover {
+    transform: translateY(-5px);
+    border-color: #38bdf8;
+}
+
+.profile-stat-card h2 {
+    color: #38bdf8;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.profile-stat-card p {
+    color: #cbd5e1;
+}
+
+.achievement-box,
+.wallet-box,
+.activity-box {
+    padding: 30px;
+}
+
+.achievement-box h2,
+.wallet-box h2,
+.activity-box h2 {
+    color: #38bdf8;
+    margin-bottom: 18px;
+}
+
+.achievement-box p,
+.wallet-box p,
+.activity-box p {
+    color: #cbd5e1;
+    margin: 12px 0;
+}
+
+.wallet-box p {
+    word-break: break-all;
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 14px;
+    border-radius: 12px;
+}
+
+.profile-buttons {
+    display: flex;
+    gap: 18px;
+}
+
+.profile-buttons button,
+.profile-buttons a {
+    min-width: 150px;
+}
+
+@media (max-width: 900px) {
+
+    .profile-page,
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-buttons {
+        flex-direction: column;
+    }
+}
