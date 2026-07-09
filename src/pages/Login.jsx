@@ -1,27 +1,53 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import API from "../api/api";
 
 function Login() {
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("demo@blockfund.ai");
-    const [password, setPassword] = useState("Demo@123");
-    const [role, setRole] = useState("user");
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const storedRole = localStorage.getItem("role");
 
-    const handleLogin = (e) => {
+    const [email, setEmail] = useState("surya@gmail.com");
+    const [password, setPassword] = useState("Surya@123");
+
+    if (isLoggedIn) {
+        return (
+            <Navigate
+                to={storedRole === "admin" ? "/admin-dashboard" : "/home"}
+                replace
+            />
+        );
+    }
+
+    const handleLogin = async (e) => {
         e.preventDefault();
 
-        if (role === "admin" && email === "admin@blockfund.ai" && password === "Admin@123") {
-            navigate("/admin-dashboard");
-            return;
-        }
+        try {
+            const response = await API.post("/auth/login", {
+                email: email,
+                password: password,
+            });
 
-        if (role === "user" && email === "demo@blockfund.ai" && password === "Demo@123") {
-            navigate("/home");
-            return;
-        }
+            localStorage.setItem("token", response.data.access_token);
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("role", response.data.user.role);
+            localStorage.setItem("username", response.data.user.full_name);
+            localStorage.setItem("userId", response.data.user.id);
 
-        alert("Invalid credentials");
+            const redirect = localStorage.getItem("redirectAfterLogin");
+
+            if (redirect) {
+                localStorage.removeItem("redirectAfterLogin");
+                navigate(redirect);
+            } else if (response.data.user.role === "admin") {
+                navigate("/admin-dashboard");
+            } else {
+                navigate("/home");
+            }
+        } catch (error) {
+            alert(error.response?.data?.detail || "Login failed");
+        }
     };
 
     return (
@@ -47,12 +73,6 @@ function Login() {
                     <p className="auth-subtitle">Access your BlockFund AI account</p>
 
                     <form onSubmit={handleLogin}>
-                        <label>Login Role</label>
-                        <select value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="user">User Login</option>
-                            <option value="admin">Admin Login</option>
-                        </select>
-
                         <label>Email Address</label>
                         <input
                             type="email"
@@ -69,17 +89,13 @@ function Login() {
                             required
                         />
 
-                        <button type="submit" className="login-btn">Login</button>
+                        <button type="submit" className="login-btn">
+                            Login
+                        </button>
                     </form>
 
                     <div className="auth-switch">
                         Don&apos;t have an account? <Link to="/register">Create account</Link>
-                    </div>
-
-                    <div className="demo-box">
-                        <h3>Demo Credentials</h3>
-                        <p><b>User:</b> demo@blockfund.ai / Demo@123</p>
-                        <p><b>Admin:</b> admin@blockfund.ai / Admin@123</p>
                     </div>
                 </div>
             </div>

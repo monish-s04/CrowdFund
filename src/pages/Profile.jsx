@@ -1,9 +1,21 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("role");
+        localStorage.removeItem("username");
+        localStorage.removeItem("redirectAfterLogin");
+
+        navigate("/", { replace: true });
+
+        // Refresh Navbar after logout
+        window.location.reload();
+    };
 
     return (
-
         <div className="profile-page">
 
             <div className="profile-card">
@@ -94,18 +106,19 @@ function Profile() {
                         Edit Profile
                     </button>
 
-                    <Link to="/" className="secondary-btn">
+                    <button
+                        onClick={handleLogout}
+                        className="secondary-btn"
+                    >
                         Logout
-                    </Link>
+                    </button>
 
                 </div>
 
             </div>
 
         </div>
-
     );
-
 }
 
 export default Profile;

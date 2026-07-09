@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 
 import "./css/common.css";
+import "./css/loader.css";
 import "./css/navbar.css";
 import "./css/landing.css";
 import "./css/auth.css";

@@ -1,0 +1,49 @@
+.loader-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, .15), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-logo {
+    width: 82px;
+    height: 82px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #38bdf8, #22c55e);
+    color: #020617;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.loader-page h1 {
+    color: #38bdf8;
+    margin-bottom: 10px;
+}
+
+.loader-page p {
+    color: #cbd5e1;
+    margin-bottom: 25px;
+}
+
+.loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #334155;
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

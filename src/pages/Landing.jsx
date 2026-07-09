@@ -1,6 +1,25 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 function Landing() {
+    const navigate = useNavigate();
+
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const role = localStorage.getItem("role");
+
+    if (isLoggedIn) {
+        return (
+            <Navigate
+                to={role === "admin" ? "/admin-dashboard" : "/home"}
+                replace
+            />
+        );
+    }
+
+    const handleDonate = () => {
+        localStorage.setItem("redirectAfterLogin", "/campaign/1");
+        navigate("/login");
+    };
+
     return (
         <div className="landing">
             <section className="landing-hero">
@@ -43,10 +62,12 @@ function Landing() {
                         <h2>Save Earth Initiative</h2>
                         <p>Join hands to build a greener tomorrow.</p>
                         <h3>₹2,45,000 raised</h3>
+
                         <div className="progress-bar">
                             <div style={{ width: "49%" }}></div>
                         </div>
-                        <button>Donate Now</button>
+
+                        <button onClick={handleDonate}>Donate Now</button>
                     </div>
                 </div>
             </section>
@@ -78,14 +99,17 @@ function Landing() {
                         <h3>⛓ Blockchain Security</h3>
                         <p>Every transaction is recorded on blockchain for transparency.</p>
                     </div>
+
                     <div className="feature-card">
                         <h3>🤖 AI Trust Evaluation</h3>
                         <p>AI analyzes campaigns and provides trust score.</p>
                     </div>
+
                     <div className="feature-card">
                         <h3>💳 Secure Donations</h3>
                         <p>Donate safely using MetaMask and blockchain wallet.</p>
                     </div>
+
                     <div className="feature-card">
                         <h3>📊 Real-Time Tracking</h3>
                         <p>Track funds, campaign progress, and donations.</p>

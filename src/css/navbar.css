@@ -26,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: 900;
 }
 
 .logo h2 {
@@ -42,7 +42,7 @@
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 18px;
 }
 
 .nav-links a {
@@ -56,16 +56,72 @@
     color: #38bdf8;
 }
 
-.wallet-btn {
+.wallet-btn,
+.notification-btn,
+.user-btn {
     border: none;
-    background: #38bdf8;
-    color: #020617;
-    padding: 11px 16px;
+    background: #1e293b;
+    color: white;
+    padding: 11px 15px;
     border-radius: 10px;
     font-weight: 700;
+    cursor: pointer;
 }
 
-@media (max-width: 900px) {
+.wallet-btn {
+    background: #38bdf8;
+    color: #020617;
+}
+
+.notification-box,
+.user-box {
+    position: relative;
+}
+
+.notification-btn span {
+    background: #ef4444;
+    color: white;
+    padding: 2px 7px;
+    border-radius: 50%;
+    font-size: 12px;
+    margin-left: 3px;
+}
+
+.dropdown {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 230px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+    z-index: 2000;
+}
+
+.dropdown p,
+.dropdown a,
+.dropdown button {
+    display: block;
+    width: 100%;
+    color: #cbd5e1;
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.dropdown a:hover,
+.dropdown button:hover,
+.dropdown p:hover {
+    background: #0f172a;
+    color: #38bdf8;
+}
+
+@media (max-width: 1000px) {
     .navbar {
         height: auto;
         padding: 18px 6%;
@@ -77,4 +133,137 @@
         flex-wrap: wrap;
         justify-content: center;
     }
+}
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo h2 {
+    color: #38bdf8;
+    font-size: 22px;
+    margin: 0;
+}
+
+.logo p {
+    color: #94a3b8;
+    font-size: 12px;
+    margin: 0;
+}
+
+.logo span {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #38bdf8, #22c55e);
+    color: #020617;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.nav-links a.active {
+    color: #38bdf8;
+    border-bottom: 2px solid #38bdf8;
+    padding-bottom: 5px;
+}
+
+.notification-box,
+.user-box {
+    position: relative;
+}
+
+.notification-btn,
+.user-btn {
+    background: #1e293b;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.notification-btn:hover,
+.user-btn:hover {
+    border-color: #38bdf8;
+}
+
+.notification-btn span {
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 7px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+.dropdown {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 240px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 999;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .3);
+}
+
+.dropdown a,
+.dropdown button,
+.dropdown p {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    text-decoration: none;
+    background: transparent;
+    color: #cbd5e1;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown a:hover,
+.dropdown button:hover,
+.dropdown p:hover {
+    background: #0f172a;
+    color: #38bdf8;
+}
+
+.wallet-btn {
+    background: linear-gradient(90deg, #38bdf8, #22c55e);
+    color: #020617;
+    font-weight: bold;
+}
+
+.wallet-btn:hover {
+    transform: translateY(-2px);
+}
+
+@media(max-width:900px) {
+
+    .logo p {
+        display: none;
+    }
+
+    .notification-btn,
+    .user-btn,
+    .wallet-btn {
+        width: 100%;
+    }
+
+    .dropdown {
+        position: static;
+        width: 100%;
+        margin-top: 10px;
+    }
+
 }
