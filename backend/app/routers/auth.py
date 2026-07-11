@@ -35,6 +35,21 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
 
     return new_user
 
+from app.models.user import User
+
+@router.get("/users")
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+
+    return [
+        {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role
+        }
+        for user in users
+    ]
 
 @router.post("/login", response_model=TokenResponse)
 def login_user(login_data: UserLogin, db: Session = Depends(get_db)):

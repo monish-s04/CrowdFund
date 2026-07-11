@@ -4,6 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config.database import engine, Base
 from app.models.user import User
 from app.routers import auth
+from app.routers import dashboard
+from app.models.campaign import Campaign
+from app.routers import campaigns
+from app.routers import profile
+from app.routers import admin
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,6 +28,11 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(dashboard.router)
+app.include_router(campaigns.router)
+app.include_router(profile.router)
+app.include_router(admin.router)
+
 
 
 @app.get("/")

@@ -1,5 +1,6 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { clearAuthData, isAuthenticated } from "../utils/auth";
 
 function Navbar() {
     const navigate = useNavigate();
@@ -8,9 +9,9 @@ function Navbar() {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
 
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const role = localStorage.getItem("role");
-    const username = localStorage.getItem("username") || "User";
+    const isLoggedIn = isAuthenticated();
+    const role = sessionStorage.getItem("role");
+    const username = sessionStorage.getItem("username") || "User";
 
     const connectWallet = async () => {
         if (window.ethereum) {
@@ -24,9 +25,8 @@ function Navbar() {
     };
 
     const logout = () => {
-        localStorage.clear();
-        navigate("/");
-        window.location.reload();
+        clearAuthData();
+        window.location.href = "/";
     };
 
     return (

@@ -1,107 +1,174 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import API from "../api/api";
 
 function Profile() {
-    const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await API.get("/profile/me");
+                setProfile(response.data);
+            } catch (err) {
+                setError(
+                    err.response?.data?.detail ||
+                    "Failed to load profile"
+                );
+            }
+        };
+
+        fetchProfile();
+    }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("role");
-        localStorage.removeItem("username");
-        localStorage.removeItem("redirectAfterLogin");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("isLoggedIn");
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("redirectAfterLogin");
 
-        navigate("/", { replace: true });
-
-        // Refresh Navbar after logout
-        window.location.reload();
+        window.location.href = "/";
     };
+
+    if (error) {
+        return (
+            <div className="profile-page">
+                <div className="profile-card">
+                    <h2>{error}</h2>
+
+                    <button
+                        onClick={handleLogout}
+                        className="secondary-btn"
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <div className="profile-page">
+                <div className="profile-card">
+                    <h2>Loading profile...</h2>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="profile-page">
-
             <div className="profile-card">
-
                 <img
                     src="https://i.pravatar.cc/220?img=12"
-                    alt="profile"
+                    alt={`${profile.full_name} profile`}
                 />
 
-                <h1>Surya</h1>
+                <h1>{profile.full_name}</h1>
 
-                <p>Campaign Creator</p>
+                <p>{profile.email}</p>
+
+                <p className="profile-role">
+                    {profile.role === "admin"
+                        ? "Administrator"
+                        : "Campaign Creator"}
+                </p>
 
                 <div className="profile-badge">
-                    🟢 Blockchain Verified
+                    🟢 Verified BlockFund User
                 </div>
 
                 <div className="profile-score">
-                    🤖 AI Trust Score
-                    <h2>94%</h2>
-                </div>
+                    🤖 Average AI Trust Score
 
+                    <h2>
+                        {profile.average_trust_score}%
+                    </h2>
+                </div>
             </div>
 
             <div className="profile-details">
-
                 <div className="profile-stats">
-
                     <div className="profile-stat-card">
-                        <h2>12</h2>
+                        <h2>{profile.total_campaigns}</h2>
                         <p>Campaigns</p>
                     </div>
 
                     <div className="profile-stat-card">
-                        <h2>₹4.52L</h2>
+                        <h2>
+                            ₹
+                            {Number(
+                                profile.total_funds_raised
+                            ).toLocaleString("en-IN")}
+                        </h2>
                         <p>Funds Raised</p>
                     </div>
 
                     <div className="profile-stat-card">
-                        <h2>186</h2>
+                        <h2>{profile.total_donations}</h2>
                         <p>Donations</p>
                     </div>
 
                     <div className="profile-stat-card">
-                        <h2>Connected</h2>
+                        <h2>{profile.wallet_status}</h2>
                         <p>Wallet</p>
                     </div>
-
                 </div>
 
                 <div className="achievement-box">
-
                     <h2>Achievements</h2>
 
-                    <p>🏆 Trusted Creator</p>
-
-                    <p>⭐ AI Verified</p>
-
-                    <p>⛓ Ethereum Verified</p>
-
-                    <p>💎 Top Fundraiser</p>
-
+                    {profile.total_campaigns > 0 ? (
+                        <>
+                            <p>🏆 Campaign Creator</p>
+                            <p>⭐ AI Evaluated Campaigns</p>
+                            <p>🔒 Verified Account</p>
+                        </>
+                    ) : (
+                        <p>
+                            Create your first campaign to unlock
+                            achievements.
+                        </p>
+                    )}
                 </div>
 
                 <div className="wallet-box">
+                    <h2>Wallet Information</h2>
 
-                    <h2>Wallet Address</h2>
+                    <p>
+                        Status:{" "}
+                        <b>{profile.wallet_status}</b>
+                    </p>
 
-                    <p>0x5A24B67F83C12A9D7F0E6A14B7C8D91E2F4A7FD8</p>
-
+                    <p>
+                        Address:{" "}
+                        <b>
+                            {profile.wallet_address ||
+                                "Connect MetaMask to display wallet address"}
+                        </b>
+                    </p>
                 </div>
 
                 <div className="activity-box">
-
                     <h2>Recent Activity</h2>
 
-                    <p>✔ Created Medical Support Campaign</p>
-
-                    <p>✔ Received ₹15,000 Donation</p>
-
-                    <p>✔ Connected MetaMask Wallet</p>
-
+                    {profile.recent_activity.length > 0 ? (
+                        profile.recent_activity.map(
+                            (activity, index) => (
+                                <p key={index}>
+                                    ✔ {activity}
+                                </p>
+                            )
+                        )
+                    ) : (
+                        <p>No recent activity available.</p>
+                    )}
                 </div>
 
                 <div className="profile-buttons">
-
                     <button className="primary-btn">
                         Edit Profile
                     </button>
@@ -112,11 +179,8 @@ function Profile() {
                     >
                         Logout
                     </button>
-
                 </div>
-
             </div>
-
         </div>
     );
 }

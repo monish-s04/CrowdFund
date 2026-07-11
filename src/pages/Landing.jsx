@@ -1,11 +1,11 @@
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { isAuthenticated } from "../utils/auth";
 
 function Landing() {
     const navigate = useNavigate();
 
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const role = localStorage.getItem("role");
-
+    const isLoggedIn = isAuthenticated();
+    const role = sessionStorage.getItem("role");
     if (isLoggedIn) {
         return (
             <Navigate
@@ -16,7 +16,7 @@ function Landing() {
     }
 
     const handleDonate = () => {
-        localStorage.setItem("redirectAfterLogin", "/campaign/1");
+        sessionStorage.setItem("redirectAfterLogin", "/campaign/1");
         navigate("/login");
     };
 

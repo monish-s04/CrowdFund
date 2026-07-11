@@ -1,13 +1,12 @@
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import API from "../api/api";
+import { isAuthenticated } from "../utils/auth";
 
 function Register() {
     const navigate = useNavigate();
 
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const storedRole = localStorage.getItem("role");
-
+    const isLoggedIn = isAuthenticated();
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

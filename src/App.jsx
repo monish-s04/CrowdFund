@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Campaigns from "./pages/Campaigns";
 import CreateCampaign from "./pages/CreateCampaign";
 import CampaignDetails from "./pages/CampaignDetails";
+import MyCampaigns from "./pages/MyCampaigns";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -68,7 +69,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/my-campaigns"
+          element={
+            <ProtectedRoute>
+              <MyCampaigns />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/campaign/:id"
           element={
