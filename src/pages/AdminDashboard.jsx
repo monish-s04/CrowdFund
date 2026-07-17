@@ -5,6 +5,7 @@ function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [campaigns, setCampaigns] = useState([]);
     const [users, setUsers] = useState([]);
+    const [donations, setDonations] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
@@ -15,18 +16,27 @@ function AdminDashboard() {
             setLoading(true);
             setError("");
 
-            const [statsResponse, campaignsResponse, usersResponse] =
-                await Promise.all([
-                    API.get("/admin/stats"),
-                    API.get("/admin/campaigns"),
-                    API.get("/admin/users"),
-                ]);
+            const [
+                statsResponse,
+                campaignsResponse,
+                usersResponse,
+                donationsResponse,
+            ] = await Promise.all([
+                API.get("/admin/stats"),
+                API.get("/admin/campaigns"),
+                API.get("/admin/users"),
+                API.get("/admin/donations"),
+            ]);
 
             setStats(statsResponse.data);
             setCampaigns(campaignsResponse.data);
             setUsers(usersResponse.data);
+            setDonations(donationsResponse.data);
         } catch (requestError) {
-            console.error("Admin dashboard error:", requestError);
+            console.error(
+                "Admin dashboard error:",
+                requestError
+            );
 
             setError(
                 requestError.response?.data?.detail ||
@@ -41,7 +51,10 @@ function AdminDashboard() {
         loadAdminData();
     }, [loadAdminData]);
 
-    const updateCampaignStatus = async (campaignId, status) => {
+    const updateCampaignStatus = async (
+        campaignId,
+        status
+    ) => {
         const actionName =
             status === "approve"
                 ? "approve"
@@ -58,7 +71,9 @@ function AdminDashboard() {
         }
 
         try {
-            setActionLoading(`${status}-${campaignId}`);
+            setActionLoading(
+                `${status}-${campaignId}`
+            );
 
             await API.put(
                 `/admin/campaigns/${campaignId}/${status}`
@@ -66,7 +81,9 @@ function AdminDashboard() {
 
             await loadAdminData();
 
-            alert(`Campaign ${status}d successfully.`);
+            alert(
+                `Campaign ${status}d successfully.`
+            );
         } catch (requestError) {
             alert(
                 requestError.response?.data?.detail ||
@@ -87,13 +104,19 @@ function AdminDashboard() {
         }
 
         try {
-            setActionLoading(`delete-${campaignId}`);
+            setActionLoading(
+                `delete-${campaignId}`
+            );
 
-            await API.delete(`/admin/campaigns/${campaignId}`);
+            await API.delete(
+                `/admin/campaigns/${campaignId}`
+            );
 
             await loadAdminData();
 
-            alert("Campaign deleted successfully.");
+            alert(
+                "Campaign deleted successfully."
+            );
         } catch (requestError) {
             alert(
                 requestError.response?.data?.detail ||
@@ -104,7 +127,10 @@ function AdminDashboard() {
         }
     };
 
-    const changeUserRole = async (userId, newRole) => {
+    const changeUserRole = async (
+        userId,
+        newRole
+    ) => {
         const confirmed = window.confirm(
             `Are you sure you want to change this user to ${newRole}?`
         );
@@ -114,7 +140,9 @@ function AdminDashboard() {
         }
 
         try {
-            setActionLoading(`role-${userId}`);
+            setActionLoading(
+                `role-${userId}`
+            );
 
             await API.put(
                 `/admin/users/${userId}/role/${newRole}`
@@ -122,7 +150,9 @@ function AdminDashboard() {
 
             await loadAdminData();
 
-            alert("User role updated successfully.");
+            alert(
+                "User role updated successfully."
+            );
         } catch (requestError) {
             alert(
                 requestError.response?.data?.detail ||
@@ -135,7 +165,7 @@ function AdminDashboard() {
 
     const deleteUser = async (userId) => {
         const confirmed = window.confirm(
-            "Are you sure you want to delete this user and all campaigns created by them?"
+            "Are you sure you want to delete this user and all related data?"
         );
 
         if (!confirmed) {
@@ -143,13 +173,19 @@ function AdminDashboard() {
         }
 
         try {
-            setActionLoading(`user-delete-${userId}`);
+            setActionLoading(
+                `user-delete-${userId}`
+            );
 
-            await API.delete(`/admin/users/${userId}`);
+            await API.delete(
+                `/admin/users/${userId}`
+            );
 
             await loadAdminData();
 
-            alert("User deleted successfully.");
+            alert(
+                "User deleted successfully."
+            );
         } catch (requestError) {
             alert(
                 requestError.response?.data?.detail ||
@@ -161,7 +197,9 @@ function AdminDashboard() {
     };
 
     const formatAmount = (amount) => {
-        return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+        return `₹${Number(
+            amount || 0
+        ).toLocaleString("en-IN")}`;
     };
 
     const getStatusClass = (status) => {
@@ -188,11 +226,45 @@ function AdminDashboard() {
         return "High";
     };
 
+    const shortenWallet = (address) => {
+        if (!address) {
+            return "N/A";
+        }
+
+        return `${address.slice(
+            0,
+            6
+        )}...${address.slice(-4)}`;
+    };
+
+    const shortenTransaction = (hash) => {
+        if (!hash) {
+            return "N/A";
+        }
+
+        return `${hash.slice(
+            0,
+            10
+        )}...${hash.slice(-8)}`;
+    };
+
+    const formatDate = (dateValue) => {
+        if (!dateValue) {
+            return "N/A";
+        }
+
+        return new Date(
+            dateValue
+        ).toLocaleString();
+    };
+
     if (loading) {
         return (
             <div className="admin-page">
                 <div className="admin-header">
-                    <h1>Loading Admin Dashboard...</h1>
+                    <h1>
+                        Loading Admin Dashboard...
+                    </h1>
                 </div>
             </div>
         );
@@ -202,7 +274,9 @@ function AdminDashboard() {
         return (
             <div className="admin-page">
                 <div className="admin-panel">
-                    <h2>Unable to load dashboard</h2>
+                    <h2>
+                        Unable to load dashboard
+                    </h2>
 
                     <p>{error}</p>
 
@@ -218,234 +292,444 @@ function AdminDashboard() {
         );
     }
 
-    const pendingCampaigns = campaigns.filter(
-        (campaign) => campaign.status === "Pending"
-    );
+    const pendingCampaigns =
+        campaigns.filter(
+            (campaign) =>
+                campaign.status === "Pending"
+        );
 
-    const flaggedCampaigns = campaigns.filter(
-        (campaign) => Number(campaign.trust_score) < 60
-    );
+    const flaggedCampaigns =
+        campaigns.filter(
+            (campaign) =>
+                Number(
+                    campaign.trust_score
+                ) < 60
+        );
 
     return (
         <div className="admin-page">
+
             <div className="admin-header">
-                <p className="small-title">Admin Panel</p>
+                <p className="small-title">
+                    Admin Panel
+                </p>
 
                 <h1>
                     Welcome,{" "}
-                    {stats?.admin?.full_name || "Admin"} 👋
+                    {stats?.admin?.full_name ||
+                        "Admin"}{" "}
+                    👋
                 </h1>
 
                 <p>
-                    Manage users, campaigns, AI risk review and
-                    campaign approvals from one place.
+                    Manage users, campaigns,
+                    donations, AI risk review and
+                    blockchain transaction records.
                 </p>
             </div>
 
             <div className="admin-stats">
+
                 <div className="admin-card">
                     <h3>Total Users</h3>
-                    <h2>{stats?.total_users ?? 0}</h2>
+                    <h2>
+                        {stats?.total_users ?? 0}
+                    </h2>
                 </div>
 
                 <div className="admin-card">
                     <h3>Total Admins</h3>
-                    <h2>{stats?.total_admins ?? 0}</h2>
+                    <h2>
+                        {stats?.total_admins ?? 0}
+                    </h2>
                 </div>
 
                 <div className="admin-card">
                     <h3>Total Campaigns</h3>
-                    <h2>{stats?.total_campaigns ?? 0}</h2>
-                </div>
-
-                <div className="admin-card warning">
-                    <h3>Pending Approvals</h3>
-                    <h2>{stats?.pending_campaigns ?? 0}</h2>
-                </div>
-
-                <div className="admin-card success">
-                    <h3>Approved Campaigns</h3>
-                    <h2>{stats?.approved_campaigns ?? 0}</h2>
-                </div>
-
-                <div className="admin-card danger">
-                    <h3>Rejected Campaigns</h3>
-                    <h2>{stats?.rejected_campaigns ?? 0}</h2>
-                </div>
-
-                <div className="admin-card">
-                    <h3>Total Funds Raised</h3>
                     <h2>
-                        {formatAmount(stats?.total_funds_raised)}
+                        {stats?.total_campaigns ?? 0}
                     </h2>
                 </div>
 
                 <div className="admin-card warning">
-                    <h3>Average AI Trust</h3>
+                    <h3>
+                        Pending Approvals
+                    </h3>
+                    <h2>
+                        {stats?.pending_campaigns ?? 0}
+                    </h2>
+                </div>
+
+                <div className="admin-card success">
+                    <h3>
+                        Approved Campaigns
+                    </h3>
+                    <h2>
+                        {stats?.approved_campaigns ?? 0}
+                    </h2>
+                </div>
+
+                <div className="admin-card danger">
+                    <h3>
+                        Rejected Campaigns
+                    </h3>
+                    <h2>
+                        {stats?.rejected_campaigns ?? 0}
+                    </h2>
+                </div>
+
+                <div className="admin-card">
+                    <h3>
+                        Total Donations
+                    </h3>
+                    <h2>
+                        {stats?.total_donations ?? 0}
+                    </h2>
+                </div>
+
+                <div className="admin-card success">
+                    <h3>
+                        Donation Amount
+                    </h3>
+                    <h2>
+                        {formatAmount(
+                            stats?.total_donation_amount
+                        )}
+                    </h2>
+                </div>
+
+                <div className="admin-card">
+                    <h3>
+                        Total Funds Raised
+                    </h3>
+                    <h2>
+                        {formatAmount(
+                            stats?.total_funds_raised
+                        )}
+                    </h2>
+                </div>
+
+                <div className="admin-card warning">
+                    <h3>
+                        Average AI Trust
+                    </h3>
                     <h2>
                         {Number(
-                            stats?.average_trust_score || 0
+                            stats?.average_trust_score ||
+                            0
                         ).toFixed(1)}
                         %
                     </h2>
                 </div>
+
+                <div className="admin-card">
+                    <h3>
+                        Unique Donors
+                    </h3>
+                    <h2>
+                        {stats?.unique_donors ?? 0}
+                    </h2>
+                </div>
+
             </div>
 
             <div className="admin-grid">
+
                 <div className="admin-panel">
+
                     <div className="admin-panel-heading">
+
                         <div>
-                            <h2>Campaign Approval Requests</h2>
+                            <h2>
+                                Campaign Approval Requests
+                            </h2>
+
                             <p>
-                                Review pending campaigns and approve or
-                                reject them.
+                                Review pending campaigns and
+                                approve or reject them.
                             </p>
                         </div>
 
                         <span className="admin-count">
-                            {pendingCampaigns.length}
+                            {
+                                pendingCampaigns.length
+                            }
                         </span>
+
                     </div>
 
                     {pendingCampaigns.length === 0 ? (
                         <div className="admin-empty">
-                            <p>No pending campaigns available.</p>
+                            <p>
+                                No pending campaigns
+                                available.
+                            </p>
                         </div>
                     ) : (
-                        pendingCampaigns.map((campaign) => (
-                            <div
-                                className="admin-row"
-                                key={campaign.id}
-                            >
-                                <div className="admin-row-info">
-                                    <h3>{campaign.title}</h3>
+                        pendingCampaigns.map(
+                            (campaign) => (
 
-                                    <p>
-                                        Created by:{" "}
-                                        <b>
-                                            {campaign.creator_name ||
-                                                "Unknown Creator"}
-                                        </b>
-                                    </p>
+                                <div
+                                    className="admin-row"
+                                    key={campaign.id}
+                                >
 
-                                    <p>
-                                        {campaign.category} • AI Score:{" "}
-                                        <b>
-                                            {campaign.trust_score}%
-                                        </b>{" "}
-                                        •{" "}
-                                        {getRiskLevel(
-                                            campaign.trust_score
-                                        )}{" "}
-                                        Risk
-                                    </p>
+                                    <div className="admin-row-info">
 
-                                    <p>
-                                        Goal:{" "}
-                                        <b>
-                                            {formatAmount(
-                                                campaign.goal_amount
-                                            )}
-                                        </b>
-                                    </p>
+                                        <h3>
+                                            {
+                                                campaign.title
+                                            }
+                                        </h3>
+
+                                        <p>
+                                            Created by:{" "}
+                                            <b>
+                                                {campaign.creator_name ||
+                                                    "Unknown Creator"}
+                                            </b>
+                                        </p>
+
+                                        <p>
+                                            {
+                                                campaign.category
+                                            }{" "}
+                                            • AI Score:{" "}
+                                            <b>
+                                                {
+                                                    campaign.trust_score
+                                                }
+                                                %
+                                            </b>{" "}
+                                            •{" "}
+                                            {getRiskLevel(
+                                                campaign.trust_score
+                                            )}{" "}
+                                            Risk
+                                        </p>
+
+                                        <p>
+                                            Goal:{" "}
+                                            <b>
+                                                {formatAmount(
+                                                    campaign.goal_amount
+                                                )}
+                                            </b>
+                                        </p>
+
+                                    </div>
+
+                                    <div className="admin-row-actions">
+
+                                        <button
+                                            type="button"
+                                            className="approve-btn"
+                                            onClick={() =>
+                                                updateCampaignStatus(
+                                                    campaign.id,
+                                                    "approve"
+                                                )
+                                            }
+                                        >
+                                            Approve
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="reject-btn"
+                                            onClick={() =>
+                                                updateCampaignStatus(
+                                                    campaign.id,
+                                                    "reject"
+                                                )
+                                            }
+                                        >
+                                            Reject
+                                        </button>
+
+                                    </div>
+
                                 </div>
 
-                                <div className="admin-row-actions">
-                                    <button
-                                        type="button"
-                                        className="approve-btn"
-                                        disabled={
-                                            actionLoading ===
-                                            `approve-${campaign.id}`
-                                        }
-                                        onClick={() =>
-                                            updateCampaignStatus(
-                                                campaign.id,
-                                                "approve"
-                                            )
-                                        }
-                                    >
-                                        {actionLoading ===
-                                            `approve-${campaign.id}`
-                                            ? "Approving..."
-                                            : "Approve"}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className="reject-btn"
-                                        disabled={
-                                            actionLoading ===
-                                            `reject-${campaign.id}`
-                                        }
-                                        onClick={() =>
-                                            updateCampaignStatus(
-                                                campaign.id,
-                                                "reject"
-                                            )
-                                        }
-                                    >
-                                        {actionLoading ===
-                                            `reject-${campaign.id}`
-                                            ? "Rejecting..."
-                                            : "Reject"}
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                            )
+                        )
                     )}
+
                 </div>
 
                 <div className="admin-panel">
+
                     <h2>AI Risk Review</h2>
 
                     <div className="risk-summary">
+
                         <p>
                             ⚠️{" "}
-                            <b>{flaggedCampaigns.length}</b>{" "}
-                            high-risk campaigns need manual review.
+                            <b>
+                                {
+                                    flaggedCampaigns.length
+                                }
+                            </b>{" "}
+                            high-risk campaigns need
+                            manual review.
                         </p>
 
                         <p>
                             🤖{" "}
-                            <b>{campaigns.length}</b> campaigns have
-                            been evaluated.
+                            <b>
+                                {campaigns.length}
+                            </b>{" "}
+                            campaigns evaluated.
                         </p>
 
                         <p>
                             ✅{" "}
                             <b>
-                                {stats?.approved_campaigns ?? 0}
+                                {stats?.approved_campaigns ??
+                                    0}
                             </b>{" "}
-                            campaigns are approved.
+                            approved campaigns.
                         </p>
 
                         <p>
-                            ⏳{" "}
+                            💰{" "}
                             <b>
-                                {stats?.pending_campaigns ?? 0}
+                                {stats?.total_donations ??
+                                    0}
                             </b>{" "}
-                            campaigns are waiting for approval.
+                            blockchain donation records.
                         </p>
 
-                        <p>
-                            ❌{" "}
-                            <b>
-                                {stats?.rejected_campaigns ?? 0}
-                            </b>{" "}
-                            campaigns were rejected.
-                        </p>
                     </div>
+
                 </div>
+
             </div>
 
             <div className="admin-panel">
+
+                <div className="admin-panel-heading">
+
+                    <div>
+                        <h2>
+                            Blockchain Transactions
+                        </h2>
+
+                        <p>
+                            View donation transactions
+                            recorded in MySQL.
+                        </p>
+                    </div>
+
+                    <span className="admin-count">
+                        {donations.length}
+                    </span>
+
+                </div>
+
+                <div className="admin-table-wrapper">
+
+                    <table className="admin-table">
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Donor</th>
+                                <th>Campaign</th>
+                                <th>Amount</th>
+                                <th>Wallet</th>
+                                <th>Transaction Hash</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {donations.length === 0 ? (
+
+                                <tr>
+                                    <td colSpan="7">
+                                        No donation transactions
+                                        available.
+                                    </td>
+                                </tr>
+
+                            ) : (
+
+                                donations.map(
+                                    (donation) => (
+
+                                        <tr
+                                            key={
+                                                donation.id
+                                            }
+                                        >
+
+                                            <td>
+                                                {
+                                                    donation.id
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    donation.donor_name
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    donation.campaign_title
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {formatAmount(
+                                                    donation.amount
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                {shortenWallet(
+                                                    donation.wallet_address
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                {shortenTransaction(
+                                                    donation.transaction_hash
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                {formatDate(
+                                                    donation.created_at
+                                                )}
+                                            </td>
+
+                                        </tr>
+
+                                    )
+                                )
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div className="admin-panel">
+
                 <div className="admin-panel-heading">
                     <div>
                         <h2>All Campaigns</h2>
                         <p>
-                            View and manage every campaign stored in
-                            MySQL.
+                            View and manage every campaign
+                            stored in MySQL.
                         </p>
                     </div>
 
@@ -455,7 +739,9 @@ function AdminDashboard() {
                 </div>
 
                 <div className="admin-table-wrapper">
+
                     <table className="admin-table">
+
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -463,6 +749,7 @@ function AdminDashboard() {
                                 <th>Creator</th>
                                 <th>Category</th>
                                 <th>Goal</th>
+                                <th>Raised</th>
                                 <th>AI Trust</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -470,30 +757,40 @@ function AdminDashboard() {
                         </thead>
 
                         <tbody>
-                            {campaigns.length === 0 ? (
-                                <tr>
-                                    <td colSpan="8">
-                                        No campaigns available.
-                                    </td>
-                                </tr>
-                            ) : (
-                                campaigns.map((campaign) => (
-                                    <tr key={campaign.id}>
-                                        <td>{campaign.id}</td>
+
+                            {campaigns.map(
+                                (campaign) => (
+
+                                    <tr
+                                        key={
+                                            campaign.id
+                                        }
+                                    >
+
+                                        <td>
+                                            {
+                                                campaign.id
+                                            }
+                                        </td>
 
                                         <td>
                                             <strong>
-                                                {campaign.title}
+                                                {
+                                                    campaign.title
+                                                }
                                             </strong>
                                         </td>
 
                                         <td>
-                                            {campaign.creator_name ||
-                                                "Unknown"}
+                                            {
+                                                campaign.creator_name
+                                            }
                                         </td>
 
                                         <td>
-                                            {campaign.category}
+                                            {
+                                                campaign.category
+                                            }
                                         </td>
 
                                         <td>
@@ -503,7 +800,16 @@ function AdminDashboard() {
                                         </td>
 
                                         <td>
-                                            {campaign.trust_score}%
+                                            {formatAmount(
+                                                campaign.raised_amount
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            {
+                                                campaign.trust_score
+                                            }
+                                            %
                                         </td>
 
                                         <td>
@@ -512,16 +818,19 @@ function AdminDashboard() {
                                                     campaign.status
                                                 )}`}
                                             >
-                                                {campaign.status}
+                                                {
+                                                    campaign.status
+                                                }
                                             </span>
                                         </td>
 
                                         <td>
+
                                             <div className="table-actions">
+
                                                 {campaign.status !==
                                                     "Approved" && (
                                                         <button
-                                                            type="button"
                                                             className="approve-btn small-action-btn"
                                                             onClick={() =>
                                                                 updateCampaignStatus(
@@ -537,7 +846,6 @@ function AdminDashboard() {
                                                 {campaign.status !==
                                                     "Rejected" && (
                                                         <button
-                                                            type="button"
                                                             className="reject-btn small-action-btn"
                                                             onClick={() =>
                                                                 updateCampaignStatus(
@@ -553,7 +861,6 @@ function AdminDashboard() {
                                                 {campaign.status !==
                                                     "Pending" && (
                                                         <button
-                                                            type="button"
                                                             className="pending-btn small-action-btn"
                                                             onClick={() =>
                                                                 updateCampaignStatus(
@@ -567,7 +874,6 @@ function AdminDashboard() {
                                                     )}
 
                                                 <button
-                                                    type="button"
                                                     className="admin-delete-btn small-action-btn"
                                                     onClick={() =>
                                                         deleteCampaign(
@@ -577,33 +883,46 @@ function AdminDashboard() {
                                                 >
                                                     Delete
                                                 </button>
+
                                             </div>
+
                                         </td>
+
                                     </tr>
-                                ))
+
+                                )
                             )}
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
 
             <div className="admin-panel">
+
                 <div className="admin-panel-heading">
+
                     <div>
                         <h2>User Management</h2>
                         <p>
-                            View registered users and manage their
-                            roles.
+                            View registered users and
+                            manage their roles.
                         </p>
                     </div>
 
                     <span className="admin-count">
                         {users.length}
                     </span>
+
                 </div>
 
                 <div className="admin-table-wrapper">
+
                     <table className="admin-table">
+
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -611,29 +930,37 @@ function AdminDashboard() {
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Campaigns</th>
+                                <th>Donations</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            {users.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6">
-                                        No users available.
-                                    </td>
-                                </tr>
-                            ) : (
-                                users.map((user) => (
-                                    <tr key={user.id}>
-                                        <td>{user.id}</td>
+
+                            {users.map(
+                                (user) => (
+
+                                    <tr
+                                        key={user.id}
+                                    >
+
+                                        <td>
+                                            {user.id}
+                                        </td>
 
                                         <td>
                                             <strong>
-                                                {user.full_name}
+                                                {
+                                                    user.full_name
+                                                }
                                             </strong>
                                         </td>
 
-                                        <td>{user.email}</td>
+                                        <td>
+                                            {
+                                                user.email
+                                            }
+                                        </td>
 
                                         <td>
                                             <span
@@ -643,25 +970,33 @@ function AdminDashboard() {
                                                         : "status-pending"
                                                     }`}
                                             >
-                                                {user.role}
+                                                {
+                                                    user.role
+                                                }
                                             </span>
                                         </td>
 
                                         <td>
-                                            {user.campaign_count}
+                                            {
+                                                user.campaign_count
+                                            }
                                         </td>
 
                                         <td>
+                                            {
+                                                user.donation_count ||
+                                                0
+                                            }
+                                        </td>
+
+                                        <td>
+
                                             <div className="table-actions">
+
                                                 {user.role ===
                                                     "user" ? (
                                                     <button
-                                                        type="button"
                                                         className="approve-btn small-action-btn"
-                                                        disabled={
-                                                            actionLoading ===
-                                                            `role-${user.id}`
-                                                        }
                                                         onClick={() =>
                                                             changeUserRole(
                                                                 user.id,
@@ -673,15 +1008,12 @@ function AdminDashboard() {
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        type="button"
                                                         className="pending-btn small-action-btn"
                                                         disabled={
                                                             user.id ===
                                                             stats
                                                                 ?.admin
-                                                                ?.id ||
-                                                            actionLoading ===
-                                                            `role-${user.id}`
+                                                                ?.id
                                                         }
                                                         onClick={() =>
                                                             changeUserRole(
@@ -695,14 +1027,11 @@ function AdminDashboard() {
                                                 )}
 
                                                 <button
-                                                    type="button"
                                                     className="admin-delete-btn small-action-btn"
                                                     disabled={
                                                         user.id ===
                                                         stats?.admin
-                                                            ?.id ||
-                                                        actionLoading ===
-                                                        `user-delete-${user.id}`
+                                                            ?.id
                                                     }
                                                     onClick={() =>
                                                         deleteUser(
@@ -712,15 +1041,24 @@ function AdminDashboard() {
                                                 >
                                                     Delete User
                                                 </button>
+
                                             </div>
+
                                         </td>
+
                                     </tr>
-                                ))
+
+                                )
                             )}
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
         </div>
     );
 }
