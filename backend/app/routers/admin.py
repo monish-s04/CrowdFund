@@ -9,6 +9,7 @@ import os
 from app.config.database import get_db
 from app.models.user import User
 from app.models.campaign import Campaign
+from app.models.donation import Donation
 
 load_dotenv()
 
@@ -23,9 +24,9 @@ router = APIRouter(
 security = HTTPBearer()
 
 
-# ---------------------------------------------------------
+# =========================================================
 # ADMIN AUTHENTICATION
-# ---------------------------------------------------------
+# =========================================================
 
 def get_current_admin(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -75,9 +76,9 @@ def get_current_admin(
     return admin
 
 
-# ---------------------------------------------------------
-# FORMAT CAMPAIGN RESPONSE
-# ---------------------------------------------------------
+# =========================================================
+# FORMAT CAMPAIGN
+# =========================================================
 
 def format_campaign(
     campaign: Campaign,
@@ -114,9 +115,55 @@ def format_campaign(
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
+# FORMAT DONATION
+# =========================================================
+
+def format_donation(
+    donation: Donation,
+    db: Session,
+):
+    donor = (
+        db.query(User)
+        .filter(User.id == donation.donor_id)
+        .first()
+    )
+
+    campaign = (
+        db.query(Campaign)
+        .filter(Campaign.id == donation.campaign_id)
+        .first()
+    )
+
+    return {
+        "id": donation.id,
+        "campaign_id": donation.campaign_id,
+        "campaign_title": (
+            campaign.title
+            if campaign
+            else "Unknown Campaign"
+        ),
+        "donor_id": donation.donor_id,
+        "donor_name": (
+            donor.full_name
+            if donor
+            else "Unknown Donor"
+        ),
+        "donor_email": (
+            donor.email
+            if donor
+            else None
+        ),
+        "amount": float(donation.amount or 0),
+        "wallet_address": donation.wallet_address,
+        "transaction_hash": donation.transaction_hash,
+        "created_at": donation.created_at,
+    }
+
+
+# =========================================================
 # ADMIN DASHBOARD STATISTICS
-# ---------------------------------------------------------
+# =========================================================
 
 @router.get("/stats")
 def get_admin_statistics(
@@ -167,29 +214,59 @@ def get_admin_statistics(
         or 0
     )
 
+    total_donations = db.query(Donation).count()
+
+    total_donation_amount = (
+        db.query(func.sum(Donation.amount))
+        .scalar()
+        or 0
+    )
+
+    unique_donors = (
+        db.query(
+            func.count(
+                func.distinct(Donation.donor_id)
+            )
+        )
+        .scalar()
+        or 0
+    )
+
     return {
         "admin": {
             "id": admin.id,
             "full_name": admin.full_name,
             "email": admin.email,
         },
+
         "total_users": total_users,
         "total_admins": total_admins,
         "total_campaigns": total_campaigns,
+
         "pending_campaigns": pending_campaigns,
         "approved_campaigns": approved_campaigns,
         "rejected_campaigns": rejected_campaigns,
+
         "total_funds_raised": float(total_funds_raised),
+
         "average_trust_score": round(
             float(average_trust_score),
             1,
         ),
+
+        "total_donations": total_donations,
+
+        "total_donation_amount": float(
+            total_donation_amount
+        ),
+
+        "unique_donors": unique_donors,
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GET ALL USERS
-# ---------------------------------------------------------
+# =========================================================
 
 @router.get("/users")
 def get_all_users(
@@ -211,20 +288,27 @@ def get_all_users(
             .count()
         )
 
+        donation_count = (
+            db.query(Donation)
+            .filter(Donation.donor_id == user.id)
+            .count()
+        )
+
         result.append({
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
             "campaign_count": campaign_count,
+            "donation_count": donation_count,
         })
 
     return result
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GET ALL CAMPAIGNS
-# ---------------------------------------------------------
+# =========================================================
 
 @router.get("/campaigns")
 def get_all_campaigns(
@@ -243,9 +327,9 @@ def get_all_campaigns(
     ]
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GET PENDING CAMPAIGNS
-# ---------------------------------------------------------
+# =========================================================
 
 @router.get("/campaigns/pending")
 def get_pending_campaigns(
@@ -265,9 +349,52 @@ def get_pending_campaigns(
     ]
 
 
-# ---------------------------------------------------------
+# =========================================================
+# GET ALL DONATIONS
+# =========================================================
+
+@router.get("/donations")
+def get_all_donations(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    donations = (
+        db.query(Donation)
+        .order_by(Donation.id.desc())
+        .all()
+    )
+
+    return [
+        format_donation(donation, db)
+        for donation in donations
+    ]
+
+
+# =========================================================
+# GET RECENT DONATIONS
+# =========================================================
+
+@router.get("/donations/recent")
+def get_recent_donations(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    donations = (
+        db.query(Donation)
+        .order_by(Donation.id.desc())
+        .limit(10)
+        .all()
+    )
+
+    return [
+        format_donation(donation, db)
+        for donation in donations
+    ]
+
+
+# =========================================================
 # APPROVE CAMPAIGN
-# ---------------------------------------------------------
+# =========================================================
 
 @router.put("/campaigns/{campaign_id}/approve")
 def approve_campaign(
@@ -298,9 +425,9 @@ def approve_campaign(
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # REJECT CAMPAIGN
-# ---------------------------------------------------------
+# =========================================================
 
 @router.put("/campaigns/{campaign_id}/reject")
 def reject_campaign(
@@ -331,9 +458,9 @@ def reject_campaign(
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # SET CAMPAIGN BACK TO PENDING
-# ---------------------------------------------------------
+# =========================================================
 
 @router.put("/campaigns/{campaign_id}/pending")
 def mark_campaign_pending(
@@ -364,9 +491,9 @@ def mark_campaign_pending(
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # DELETE CAMPAIGN AS ADMIN
-# ---------------------------------------------------------
+# =========================================================
 
 @router.delete("/campaigns/{campaign_id}")
 def delete_campaign_as_admin(
@@ -386,17 +513,26 @@ def delete_campaign_as_admin(
             detail="Campaign not found",
         )
 
+    related_donations = (
+        db.query(Donation)
+        .filter(Donation.campaign_id == campaign_id)
+        .all()
+    )
+
+    for donation in related_donations:
+        db.delete(donation)
+
     db.delete(campaign)
     db.commit()
 
     return {
-        "message": "Campaign deleted successfully",
+        "message": "Campaign and related donations deleted successfully",
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # CHANGE USER ROLE
-# ---------------------------------------------------------
+# =========================================================
 
 @router.put("/users/{user_id}/role/{new_role}")
 def change_user_role(
@@ -447,9 +583,9 @@ def change_user_role(
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # DELETE USER
-# ---------------------------------------------------------
+# =========================================================
 
 @router.delete("/users/{user_id}")
 def delete_user(
@@ -482,11 +618,31 @@ def delete_user(
     )
 
     for campaign in user_campaigns:
+        campaign_donations = (
+            db.query(Donation)
+            .filter(
+                Donation.campaign_id == campaign.id
+            )
+            .all()
+        )
+
+        for donation in campaign_donations:
+            db.delete(donation)
+
         db.delete(campaign)
+
+    user_donations = (
+        db.query(Donation)
+        .filter(Donation.donor_id == user.id)
+        .all()
+    )
+
+    for donation in user_donations:
+        db.delete(donation)
 
     db.delete(user)
     db.commit()
 
     return {
-        "message": "User and associated campaigns deleted successfully",
+        "message": "User and related data deleted successfully",
     }
