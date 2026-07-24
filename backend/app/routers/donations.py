@@ -1,26 +1,16 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException
-)
-
-from fastapi.security import (
-    HTTPAuthorizationCredentials,
-    HTTPBearer
-)
-
-from sqlalchemy.orm import Session
-from jose import jwt, JWTError
-from dotenv import load_dotenv
-
 import os
 
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
 from app.config.database import get_db
-
-from app.models.donation import Donation
 from app.models.campaign import Campaign
+from app.models.donation import Donation
+from app.models.notification import Notification
 from app.models.user import User
-
 from app.schemas.donation_schema import DonationCreate
 
 
@@ -29,12 +19,10 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
-
 router = APIRouter(
     prefix="/donations",
-    tags=["Donations"]
+    tags=["Donations"],
 )
-
 
 security = HTTPBearer()
 
@@ -44,7 +32,7 @@ security = HTTPBearer()
 # =========================================================
 
 def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     token = credentials.credentials
 
@@ -52,7 +40,7 @@ def get_current_user_id(
         payload = jwt.decode(
             token,
             SECRET_KEY,
-            algorithms=[ALGORITHM]
+            algorithms=[ALGORITHM],
         )
 
         user_id = payload.get("user_id")
@@ -60,7 +48,7 @@ def get_current_user_id(
         if user_id is None:
             raise HTTPException(
                 status_code=401,
-                detail="Invalid token payload"
+                detail="Invalid token payload",
             )
 
         return int(user_id)
@@ -68,7 +56,7 @@ def get_current_user_id(
     except (JWTError, ValueError):
         raise HTTPException(
             status_code=401,
-            detail="Invalid or expired token"
+            detail="Invalid or expired token",
         )
 
 
@@ -78,7 +66,7 @@ def get_current_user_id(
 
 def format_donation(
     donation: Donation,
-    db: Session
+    db: Session,
 ):
     donor = (
         db.query(User)
@@ -106,10 +94,10 @@ def format_donation(
             if donor
             else "Unknown Donor"
         ),
-        "amount": donation.amount,
+        "amount": float(donation.amount or 0),
         "wallet_address": donation.wallet_address,
         "transaction_hash": donation.transaction_hash,
-        "created_at": donation.created_at
+        "created_at": donation.created_at,
     }
 
 
@@ -121,7 +109,7 @@ def format_donation(
 def create_donation(
     donation_data: DonationCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: int = Depends(get_current_user_id),
 ):
     campaign = (
         db.query(Campaign)
@@ -134,26 +122,26 @@ def create_donation(
     if campaign is None:
         raise HTTPException(
             status_code=404,
-            detail="Campaign not found"
+            detail="Campaign not found",
         )
 
     if campaign.status != "Approved":
         raise HTTPException(
             status_code=400,
-            detail="Donations are allowed only for approved campaigns"
+            detail="Donations are allowed only for approved campaigns",
         )
 
     if donation_data.amount <= 0:
         raise HTTPException(
             status_code=400,
-            detail="Donation amount must be greater than zero"
+            detail="Donation amount must be greater than zero",
         )
 
     existing_transaction = (
         db.query(Donation)
         .filter(
-            Donation.transaction_hash ==
-            donation_data.transaction_hash
+            Donation.transaction_hash
+            == donation_data.transaction_hash
         )
         .first()
     )
@@ -161,15 +149,21 @@ def create_donation(
     if existing_transaction:
         raise HTTPException(
             status_code=400,
-            detail="Transaction already recorded"
+            detail="Transaction already recorded",
         )
+
+    donor = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
 
     new_donation = Donation(
         campaign_id=donation_data.campaign_id,
         donor_id=user_id,
         amount=donation_data.amount,
         wallet_address=donation_data.wallet_address,
-        transaction_hash=donation_data.transaction_hash
+        transaction_hash=donation_data.transaction_hash,
     )
 
     db.add(new_donation)
@@ -179,6 +173,37 @@ def create_donation(
         + float(donation_data.amount)
     )
 
+    # Notification for campaign owner
+    owner_notification = Notification(
+        user_id=campaign.user_id,
+        title="New Donation Received",
+        message=(
+            f"{donor.full_name if donor else 'A donor'} donated "
+            f"₹{float(donation_data.amount):,.2f} to "
+            f"your campaign '{campaign.title}'."
+        ),
+        notification_type="donation",
+        related_campaign_id=campaign.id,
+    )
+
+    db.add(owner_notification)
+
+    # Donation confirmation for donor
+    if user_id != campaign.user_id:
+        donor_notification = Notification(
+            user_id=user_id,
+            title="Donation Successful",
+            message=(
+                f"Your donation of "
+                f"₹{float(donation_data.amount):,.2f} to "
+                f"'{campaign.title}' was recorded successfully."
+            ),
+            notification_type="success",
+            related_campaign_id=campaign.id,
+        )
+
+        db.add(donor_notification)
+
     db.commit()
     db.refresh(new_donation)
     db.refresh(campaign)
@@ -187,10 +212,9 @@ def create_donation(
         "message": "Donation recorded successfully",
         "donation": format_donation(
             new_donation,
-            db
+            db,
         ),
-        "updated_raised_amount":
-            campaign.raised_amount
+        "updated_raised_amount": campaign.raised_amount,
     }
 
 
@@ -200,7 +224,7 @@ def create_donation(
 
 @router.get("/")
 def get_all_donations(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     donations = (
         db.query(Donation)
@@ -221,7 +245,7 @@ def get_all_donations(
 @router.get("/campaign/{campaign_id}")
 def get_campaign_donations(
     campaign_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     donations = (
         db.query(Donation)
@@ -245,7 +269,7 @@ def get_campaign_donations(
 @router.get("/my")
 def get_my_donations(
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: int = Depends(get_current_user_id),
 ):
     donations = (
         db.query(Donation)

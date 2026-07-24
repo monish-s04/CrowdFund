@@ -4,6 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from dotenv import load_dotenv
+from app.models.notification import Notification
 import os
 
 from app.config.database import get_db
@@ -90,28 +91,66 @@ def format_campaign(
         .first()
     )
 
+    donation_stats = (
+        db.query(
+            func.count(Donation.id),
+            func.count(func.distinct(Donation.donor_id)),
+            func.sum(Donation.amount),
+            func.avg(Donation.amount),
+            func.max(Donation.amount),
+        )
+        .filter(Donation.campaign_id == campaign.id)
+        .first()
+    )
+
+    donation_count = int(donation_stats[0] or 0)
+    unique_donors = int(donation_stats[1] or 0)
+    donation_total = float(donation_stats[2] or 0)
+    average_donation = float(donation_stats[3] or 0)
+    largest_donation = float(donation_stats[4] or 0)
+
+    # Donation records are the source of truth when available.
+    stored_raised = float(campaign.raised_amount or 0)
+    raised_amount = max(stored_raised, donation_total)
+    goal_amount = float(campaign.goal_amount or 0)
+    remaining_amount = max(goal_amount - raised_amount, 0)
+    funding_percentage = (
+        min((raised_amount / goal_amount) * 100, 100)
+        if goal_amount > 0
+        else 0
+    )
+
+    latest_donation = (
+        db.query(Donation)
+        .filter(Donation.campaign_id == campaign.id)
+        .order_by(Donation.id.desc())
+        .first()
+    )
+
     return {
         "id": campaign.id,
         "user_id": campaign.user_id,
-        "creator_name": (
-            creator.full_name
-            if creator
-            else "Unknown Creator"
-        ),
-        "creator_email": (
-            creator.email
-            if creator
-            else None
-        ),
+        "creator_name": creator.full_name if creator else "Unknown Creator",
+        "creator_email": creator.email if creator else None,
         "title": campaign.title,
         "category": campaign.category,
-        "goal_amount": campaign.goal_amount,
-        "raised_amount": campaign.raised_amount or 0,
+        "goal_amount": goal_amount,
+        "raised_amount": raised_amount,
+        "remaining_amount": remaining_amount,
+        "funding_percentage": round(funding_percentage, 1),
+        "donation_count": donation_count,
+        "unique_donors": unique_donors,
+        "average_donation": round(average_donation, 2),
+        "largest_donation": largest_donation,
+        "latest_donation_at": (
+            latest_donation.created_at if latest_donation else None
+        ),
         "duration_days": campaign.duration_days,
         "description": campaign.description,
         "image_url": campaign.image_url,
-        "trust_score": campaign.trust_score,
+        "trust_score": float(campaign.trust_score or 0),
         "status": campaign.status,
+        "created_at": getattr(campaign, "created_at", None),
     }
 
 
@@ -393,6 +432,44 @@ def get_recent_donations(
 
 
 # =========================================================
+# GET DONATIONS FOR ONE CAMPAIGN
+# =========================================================
+
+@router.get("/campaigns/{campaign_id}/donations")
+def get_campaign_donation_history(
+    campaign_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    campaign = (
+        db.query(Campaign)
+        .filter(Campaign.id == campaign_id)
+        .first()
+    )
+
+    if campaign is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Campaign not found",
+        )
+
+    donations = (
+        db.query(Donation)
+        .filter(Donation.campaign_id == campaign_id)
+        .order_by(Donation.id.desc())
+        .all()
+    )
+
+    return {
+        "campaign": format_campaign(campaign, db),
+        "donations": [
+            format_donation(donation, db)
+            for donation in donations
+        ],
+    }
+
+
+# =========================================================
 # APPROVE CAMPAIGN
 # =========================================================
 
@@ -415,6 +492,19 @@ def approve_campaign(
         )
 
     campaign.status = "Approved"
+
+    notification = Notification(
+    user_id=campaign.user_id,
+    title="Campaign Approved",
+    message=(
+        f"Your campaign '{campaign.title}' has been approved. "
+        "It is now visible to donors and can receive donations."
+    ),
+    notification_type="approved",
+    related_campaign_id=campaign.id,
+    )
+
+    db.add(notification)
 
     db.commit()
     db.refresh(campaign)
@@ -448,6 +538,19 @@ def reject_campaign(
         )
 
     campaign.status = "Rejected"
+
+    notification = Notification(
+    user_id=campaign.user_id,
+    title="Campaign Rejected",
+    message=(
+        f"Your campaign '{campaign.title}' was rejected. "
+        "Please review the campaign details and update the information."
+    ),
+    notification_type="rejected",
+    related_campaign_id=campaign.id,
+    )
+
+    db.add(notification)
 
     db.commit()
     db.refresh(campaign)
